@@ -1,0 +1,6 @@
+{
+  "name": "Gestión de clientes",
+  "description": "Plataforma de gestión de clientes, órdenes de trabajo, calendario de entregas, facturas en PDF y mensajes automáticos de WhatsApp.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

@@ -1,0 +1,91 @@
+{
+  "entities": {
+    "Client": {
+      "title": "Client",
+      "description": "Datos de cliente automotriz",
+      "type": "object",
+      "properties": {
+        "fullName": { "type": "string", "maxLength": 150 },
+        "phone": { "type": "string", "maxLength": 50 },
+        "email": { "type": "string", "maxLength": 100 },
+        "notes": { "type": "string", "maxLength": 1000 },
+        "totalSpent": { "type": "number" },
+        "totalDebt": { "type": "number" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["fullName", "phone"]
+    },
+    "WorkOrder": {
+      "title": "WorkOrder",
+      "description": "Orden de servicio o trabajo automotriz",
+      "type": "object",
+      "properties": {
+        "clientId": { "type": "string", "maxLength": 128 },
+        "clientName": { "type": "string", "maxLength": 150 },
+        "vehiclePlate": { "type": "string", "maxLength": 20 },
+        "vehicleModel": { "type": "string", "maxLength": 100 },
+        "technicalNotes": { "type": "string", "maxLength": 2000 },
+        "status": { "type": "string", "enum": ["in_progress", "completed", "on_hold"] },
+        "totalAmount": { "type": "number" },
+        "paidAmount": { "type": "number" },
+        "balanceDue": { "type": "number" },
+        "isManualBalanceOverride": { "type": "boolean" },
+        "manualBalanceReason": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string" },
+        "completedAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["clientId", "vehiclePlate", "vehicleModel", "status", "totalAmount"]
+    },
+    "Payment": {
+      "title": "Payment",
+      "description": "Registro de pago parcial o total para un trabajo",
+      "type": "object",
+      "properties": {
+        "workOrderId": { "type": "string", "maxLength": 128 },
+        "clientId": { "type": "string", "maxLength": 128 },
+        "amount": { "type": "number" },
+        "paymentMethod": { "type": "string", "maxLength": 50 },
+        "paymentDate": { "type": "string" },
+        "referenceNumber": { "type": "string", "maxLength": 100 },
+        "notes": { "type": "string", "maxLength": 500 },
+        "recordedBy": { "type": "string", "maxLength": 100 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["workOrderId", "clientId", "amount", "paymentDate"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Registro de auditoría de operaciones del equipo",
+      "type": "object",
+      "properties": {
+        "action": { "type": "string", "maxLength": 100 },
+        "entityType": { "type": "string", "maxLength": 50 },
+        "entityId": { "type": "string", "maxLength": 128 },
+        "details": { "type": "string", "maxLength": 1000 },
+        "performedBy": { "type": "string", "maxLength": 100 },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["action", "entityType", "entityId", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/clients/{clientId}": {
+      "schema": { "$ref": "#/entities/Client" },
+      "description": "Colección de clientes registrados"
+    },
+    "/workOrders/{workOrderId}": {
+      "schema": { "$ref": "#/entities/WorkOrder" },
+      "description": "Colección de órdenes de trabajo"
+    },
+    "/payments/{paymentId}": {
+      "schema": { "$ref": "#/entities/Payment" },
+      "description": "Colección de pagos registrados"
+    },
+    "/auditLogs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Historial de auditoría multiusuario"
+    }
+  }
+}

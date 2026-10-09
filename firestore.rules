@@ -1,0 +1,96 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Clients Collection
+    match /clients/{clientId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && isValidId(clientId)
+        && incoming().fullName is string && incoming().fullName.size() > 0 && incoming().fullName.size() <= 150
+        && incoming().phone is string && incoming().phone.size() > 0 && incoming().phone.size() <= 50;
+      allow update: if isSignedIn()
+        && isValidId(clientId)
+        && incoming().fullName is string && incoming().fullName.size() > 0 && incoming().fullName.size() <= 150
+        && incoming().phone is string && incoming().phone.size() > 0 && incoming().phone.size() <= 50;
+      allow delete: if isSignedIn() && isValidId(clientId);
+    }
+
+    // Tapicería Automotriz (workOrders)
+    match /workOrders/{workOrderId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && isValidId(workOrderId)
+        && incoming().clientId is string && incoming().clientId.size() > 0
+        && incoming().vehiclePlate is string && incoming().vehiclePlate.size() > 0 && incoming().vehiclePlate.size() <= 20
+        && incoming().status in ['in_progress', 'completed', 'on_hold']
+        && incoming().totalAmount is number && incoming().totalAmount >= 0;
+      allow update: if isSignedIn()
+        && isValidId(workOrderId)
+        && incoming().vehiclePlate is string && incoming().vehiclePlate.size() > 0 && incoming().vehiclePlate.size() <= 20
+        && incoming().status in ['in_progress', 'completed', 'on_hold']
+        && incoming().totalAmount is number && incoming().totalAmount >= 0;
+      allow delete: if isSignedIn() && isValidId(workOrderId);
+    }
+
+    // Apartado Dedicado de Muebles (furnitureOrders)
+    match /furnitureOrders/{furnitureId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && isValidId(furnitureId)
+        && incoming().clientId is string && incoming().clientId.size() > 0
+        && incoming().furnitureType is string && incoming().furnitureType.size() > 0 && incoming().furnitureType.size() <= 150
+        && incoming().status in ['in_progress', 'completed', 'on_hold']
+        && incoming().totalAmount is number && incoming().totalAmount >= 0;
+      allow update: if isSignedIn()
+        && isValidId(furnitureId)
+        && incoming().furnitureType is string && incoming().furnitureType.size() > 0 && incoming().furnitureType.size() <= 150
+        && incoming().status in ['in_progress', 'completed', 'on_hold']
+        && incoming().totalAmount is number && incoming().totalAmount >= 0;
+      allow delete: if isSignedIn() && isValidId(furnitureId);
+    }
+
+    // Payments Collection
+    match /payments/{paymentId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && isValidId(paymentId)
+        && incoming().orderId is string && incoming().orderId.size() > 0
+        && incoming().clientId is string && incoming().clientId.size() > 0
+        && incoming().amount is number && incoming().amount > 0;
+      allow update: if isSignedIn()
+        && isValidId(paymentId)
+        && incoming().amount is number && incoming().amount > 0;
+      allow delete: if isSignedIn() && isValidId(paymentId);
+    }
+
+    // Audit Logs Collection
+    match /auditLogs/{logId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && isValidId(logId)
+        && incoming().action is string && incoming().action.size() > 0;
+      allow update, delete: if false; // Inmutable
+    }
+  }
+}
